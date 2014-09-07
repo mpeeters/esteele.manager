@@ -19,19 +19,23 @@ def check_pypi_access(data):
 def show_changelog_entries(data):
     # Find changelog
     # TODO: Figure out how to catch malformed rst
-    if data['history_file'] is not None:
-        changelog = Changelog(file_location=data['history_file'])
-    # Get top release's entry
-    entries = changelog.latest()
-    if entries is None:
-        if not ask("Unable to parse changelog. Continue?", default=True):
+    if data['history_file'] is None:
+        print "History file not found"
+        if not ask("Continue?", default=True):
             sys.exit()
-        return
-    print "Changelog entries for version %s." % data['new_version']
-    for entry in entries:
-        print entry
-    if not ask("Continue?", default=True):
-        sys.exit()
+    else:
+        changelog = Changelog(file_location=data['history_file'])
+        # Get top release's entry
+        entries = changelog.latest()
+        if entries is None:
+            if not ask("Unable to parse changelog. Continue?", default=True):
+                sys.exit()
+            return
+        print "Changelog entries for version %s." % data['new_version']
+        for entry in entries:
+            print entry
+        if not ask("Continue?", default=True):
+            sys.exit()
 
 
 def update_core(data):
