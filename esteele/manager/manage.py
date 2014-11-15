@@ -17,6 +17,7 @@ from launchpadlib.launchpad import Launchpad
 from progress.bar import Bar
 
 from esteele.manager import pypi
+from esteele.manager.buildout import VersionsFile
 from esteele.manager.buildout import Buildout
 from esteele.manager.buildout import CheckoutsFile
 
@@ -85,7 +86,7 @@ def checkPackageForUpdates(package_name, interactive=False):
                     pass
                 else:
                     if latest_tag_in_branch > version:
-                        print "\nNewer version %s is available for %s." % (latest_tag_in_branch,package_name)
+                        print "\nNewer version %s is available for %s." % (latest_tag_in_branch, package_name)
                         if confirm("Update versions.cfg",
                                    default=True,
                                    skip=not interactive):
@@ -172,7 +173,6 @@ def checkAllPackagesForUpdates(args):
     sources = buildout.sources
     for package_name, source in Bar('Scanning').iter(sources.iteritems()):
         checkPackageForUpdates(package_name, args.interactive)
-        # print "\n"
 
 
 def pulls():
@@ -239,6 +239,13 @@ def append_jenkins_build_number_to_package_version(jenkins_build_number):
     old_version = cleanup_version(vcs.version)
     new_version = '{}.{}'.format(old_version, jenkins_build_number)
     vcs.version = new_version
+    return new_version
+
+
+@command
+def set_package_version(version_file_path, package_name, new_version):
+    versions = VersionsFile(version_file_path)
+    versions.set(package_name, new_version)
 
 
 class Manage(object):
@@ -253,7 +260,8 @@ class Manage(object):
              changelog,
              create_launchpad_release,
              check_checkout,
-             append_jenkins_build_number_to_package_version])
+             append_jenkins_build_number_to_package_version,
+             set_package_version])
         parser.dispatch()
 
 
